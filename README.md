@@ -20,4 +20,9 @@ In real world scenario we will receive data from API.will receive customer revie
 **Procedure:**
 1)In https://mockapi.io/projects created review endpoint which contains cusotmer id,product id,review rating,review text,review date and generated 77 mock reviews
 **#4.Data Proc(pyspark)**
-
+enable mysql to gcs to bigquery connectivity
+1)created spark cluster with 2 worker nodes
+2)created spark job jupyter notebook by using jupyter lab interface inside GCP
+3)establised bigquery,cloud storage and mysql connectivity using spark session
+4)Moved old json files of mysql tables into archive to the respective year,mothh folder maitanined separete json file for every table every day
+5)craeted new folder in landing folder from where it will be moved into biqgquery

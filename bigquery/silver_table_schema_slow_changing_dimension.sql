@@ -317,6 +317,78 @@ ON target.supplier_id = source.supplier_id
 WHEN NOT MATCHED THEN
     INSERT (supplier_id, product_id, supply_price, last_updated, effective_start_date, effective_end_date, is_active)
     VALUES (source.supplier_id, source.product_id, source.supply_price, source.last_updated, source.effective_start_date, source.effective_end_date, source.is_active);
+------------------------------ORDER ITEMS
+CREATE TABLE IF NOT EXISTS `project-e89263b7-f16e-4dc3-9db.silver_dataset.order_items`
+(
+    order_item_id INT64,
+    order_id INT64,
+    product_id INT64,
+    quantity INT64,
+    price FLOAT64,
+    updated_at STRING,
+    derived_updated_at TIMESTAMP,
+    effective_start_date TIMESTAMP,
+    effective_end_date TIMESTAMP,
+    is_active BOOL
+);
+INSERT INTO `project-e89263b7-f16e-4dc3-9db.silver_dataset.order_items`
+(
+  order_id,
+  order_item_id,
+  product_id,
+  quantity,
+  price,
+  updated_at,
+  derived_updated_at,
+  effective_start_date,
+  effective_end_date,
+  is_active
+)
+SELECT DISTINCT
+    *,
+    TIMESTAMP_MILLIS(SAFE_CAST(updated_at AS INT64)) as derived_updated_at,
+    CURRENT_TIMESTAMP() AS effective_start_date,
+    CURRENT_TIMESTAMP() AS effective_end_date,
+    TRUE AS is_active
+  FROM `project-e89263b7-f16e-4dc3-9db.bronze_dataset.order_items`
+
+--Step 2: Update Existing Active Records if There Are Changes
+MERGE INTO `project-e89263b7-f16e-4dc3-9db.silver_dataset.order_items` target
+USING
+  (SELECT DISTINCT
+    *,
+    TIMESTAMP_MILLIS(SAFE_CAST(updated_at AS INT64)) as derived_updated_at,
+    CURRENT_TIMESTAMP() AS effective_start_date,
+    CURRENT_TIMESTAMP() AS effective_end_date,
+    TRUE AS is_active
+  FROM `project-e89263b7-f16e-4dc3-9db.bronze_dataset.order_items`) source
+ON target.order_item_id = source.order_item_id AND target.is_active = true
+WHEN MATCHED AND
+            (
+             target.order_id != source.order_id OR
+             target.product_id != source.product_id OR
+             target.quantity != source.quantity OR
+             target.price != source.price OR
+             target.updated_at != source.updated_at
+            )
+    THEN UPDATE SET
+        target.is_active = false,
+        target.effective_end_date = current_timestamp();
+
+--Step 3: Insert New or Updated Records
+MERGE INTO `project-e89263b7-f16e-4dc3-9db.silver_dataset.order_items` target
+USING
+  (SELECT DISTINCT
+    *,
+    TIMESTAMP_MILLIS(SAFE_CAST(updated_at AS INT64)) as derived_updated_at,
+    CURRENT_TIMESTAMP() AS effective_start_date,
+    CURRENT_TIMESTAMP() AS effective_end_date,
+    TRUE AS is_active
+  FROM `project-e89263b7-f16e-4dc3-9db.bronze_dataset.order_items`) source
+ON target.order_item_id = source.order_item_id AND target.is_active = true
+WHEN NOT MATCHED THEN
+    INSERT (order_item_id, order_id, product_id, quantity, price, updated_at, effective_start_date, effective_end_date, is_active)
+    VALUES (source.order_item_id, source.order_id, source.product_id, source.quantity, source.price, source.updated_at, source.effective_start_date, source.effective_end_date, source.is_active);
 
 ------------------------------CUSTOMER REVIEWS-----------------------------------
     --Step 1: Create the customer_reviews Table in the Silver Layer

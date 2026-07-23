@@ -27,3 +27,8 @@ enable mysql to gcs to bigquery connectivity
 4)Moved old json files of mysql tables into archive to the respective year,mothh folder maitanined separete json file for every table every day
 5)created new folder in landing folder from where it will be moved into biqgquery
 Note:Bigquery write access & dataproc service account is mandatory
+**#6.Composer(Airflow)**
+Note:Run this in CLI to enable required API'S to create composer environment
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable container.googleapis.com
+gcloud services enable iamcredentials.googleapis.com

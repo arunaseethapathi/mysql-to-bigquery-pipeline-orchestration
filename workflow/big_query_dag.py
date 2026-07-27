@@ -7,9 +7,9 @@ from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobO
 # Define constants
 PROJECT_ID = "project-e89263b7-f16e-4dc3-9db"
 LOCATION = "US"
-SQL_FILE_PATH_1 = "/home/airflow/gcs/data/BQ/bronzeTable.sql"
-SQL_FILE_PATH_2 = "/home/airflow/gcs/data/BQ/silverTable.sql"
-SQL_FILE_PATH_3 = "/home/airflow/gcs/data/BQ/goldTable.sql"
+SQL_FILE_PATH_1 = "/home/airflow/gcs/bigquery/bronze_table_schema_creation_query.sql"
+SQL_FILE_PATH_2 = "/home/airflow/gcs/bigquery/silver_table_schema_slow_changing_dimension.sql"
+SQL_FILE_PATH_3 = "/home/airflow/gcs/bigquery/gold_aggregated_tables.sql"
 
 # Read SQL query from file
 def read_sql_file(file_path):
